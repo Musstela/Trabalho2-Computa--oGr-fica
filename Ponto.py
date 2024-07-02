@@ -34,16 +34,19 @@ class Ponto:
     def __add__(self, other):
             x = self.x + other.x
             y = self.y + other.y
-            return Ponto(x, y)
+            z = self.z + other.z
+            return Ponto(x, y, z)
 
     def __sub__(self, other):
             x = self.x - other.x
             y = self.y - other.y
+            z = self.z + other.z
             return Ponto(x, y)
 
     def __mul__(self, other: int):
             x = self.x * other
             y = self.y * other
+            z = self.z + other.z
             return Ponto(x, y)
 
     def rotacionaZ(self, angulo):

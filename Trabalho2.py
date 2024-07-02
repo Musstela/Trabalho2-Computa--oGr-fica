@@ -4,17 +4,18 @@ from OpenGL.GLU import *
 from Ponto import Ponto
 from Linha import Linha
 from ListaDeCoresRGB import *
+from Camera import *
+from Entidade import *
 #from PIL import Image
 import time
 import random
 
-tipoCamera = 1
-Angulo = 0.0
-# **********************************************************************
-#  init()
-#  Inicializa os parÃ¢metros globais de OpenGL
-#/ **********************************************************************
+camera = None
+personagens = []
+player = None
+
 def init():
+    global player
     # Define a cor do fundo da tela (BRANCO) 
     glClearColor(0.5, 0.5, 0.5, 1.0)
 
@@ -24,10 +25,8 @@ def init():
     glEnable (GL_CULL_FACE )
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
-    #image = Image.open("Tex.png")
-    #print ("X:", image.size[0])
-    #print ("Y:", image.size[1])
-    #image.show()
+    personagens.append(Entidade(Ponto(0,0.5,0),0))
+    player = personagens[0]
     
    
 
@@ -87,11 +86,6 @@ def DefineLuz():
     # concentrado serÃ¡ o brilho. (Valores vÃ¡lidos: de 0 a 128)
     glMateriali(GL_FRONT,GL_SHININESS,51)
 
-# **********************************************************************
-# DesenhaCubos()
-# Desenha o cenario
-#
-# **********************************************************************
 def DesenhaCubo():
     glutSolidCube(1)
     
@@ -99,16 +93,9 @@ def PosicionaCamera():
 
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    # Seta a viewport para ocupar toda a janela
-    # glViewport(0, 0, 500, 500)
-    #print ("AspectRatio", AspectRatio)
-    
-    gluPerspective(60,AspectRatio,0.01,1000) # Projecao perspectiva
-    # glOrtho(-20,20,-5,10,0.1,100)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-    gluLookAt(0, 30, -1, 
-              0,0,0, 
+    gluPerspective(70,AspectRatio,0.01,1000)
+    gluLookAt(20, 30, -10, 
+              20,0,15, 
               0,1,0) 
 
 # **********************************************************************
@@ -141,17 +128,18 @@ def DesenhaLadrilho(corBorda, corDentro):
 # **********************************************************************
 def DesenhaPiso():
     glPushMatrix()
-    glTranslated(-20,-1,-10)
-    for x in range(-20, 20):
+    for x in range(0, 40):
         glPushMatrix()
-        for z in range(-20, 20):
+        for z in range(0, 40):
             DesenhaLadrilho(White, Black)
             glTranslated(0, 0, 1)
         glPopMatrix()
         glTranslated(1, 0, 0)
     glPopMatrix()     
 
-
+def MovimentaPersonagens():
+    for personagem in personagens:
+        personagem.MovimentaEntidade()
 # **********************************************************************
 # display()
 # Funcao que exibe os desenhos na tela
@@ -168,21 +156,13 @@ def display():
     
      
     DesenhaPiso() 
-    glColor3f(0.5,0.0,0.0) # Vermelho
-    glPushMatrix()
-    glTranslatef(0,1.5,5)
-    glRotatef(Angulo,0,1,0)
-    DesenhaCubo()
-    glPopMatrix()
     
-    glColor3f(0.5,0.5,0.0) # Amarelo
+    glColor3f(0.5,0.5,0.0)
     glPushMatrix()
-    glTranslatef(0,0,0)
-    glRotatef(-Angulo,0,1,0)
+    glTranslatef(player.Posicao.x,player.Posicao.y,player.Posicao.z)
+    #glRotatef(-Angulo,0,1,0)
     DesenhaCubo()
     glPopMatrix()
-
-    Angulo = Angulo + 1
 
     glutSwapBuffers()
 
@@ -208,11 +188,12 @@ def animate():
     TempoTotal += dt
     nFrames += 1
     
-    if AccumDeltaT > 1.0/30:  # fixa a atualizaÃ§Ã£o da tela em 30
+    print(TempoTotal)
+    
+    if AccumDeltaT > 1.0/120:  # fixa a atualizaÃ§Ã£o da tela em 30
+        MovimentaPersonagens()
         AccumDeltaT = 0
         glutPostRedisplay()
-
-    
 
 # **********************************************************************
 #  keyboard ( key: int, x: int, y: int )
